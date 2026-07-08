@@ -72,7 +72,7 @@ const Login = () => {
           </motion.form>
   
           <p className="text-gray-600 text-sm mt-6 flex items-center gap-1 cursor-pointer" onClick={()=>router.push("/register")}>
-              Don't have an account? <LogIn className="w-4 h-4"/>
+              Dont have an account? <LogIn className="w-4 h-4"/>
               <span className="text-blue-600">Sign up</span>
           </p>
       </div>
