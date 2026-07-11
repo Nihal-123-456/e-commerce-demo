@@ -8,6 +8,8 @@ import Image from "next/image";
 import { AnimatePresence, motion } from "motion/react";
 import { signOut } from "next-auth/react";
 import { createPortal } from "react-dom";
+import { useSelector } from "react-redux";
+import { RootState } from "@/redux/store";
 
 interface IUser {
   _id?: mongoose.Types.ObjectId;
@@ -24,6 +26,7 @@ const Nav = ({ user }: { user: IUser }) => {
   const profileDropDown = useRef<HTMLDivElement>(null)
   const [searchBarOpen, setSearchBarOpen] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
+  const {cartData} = useSelector((state:RootState)=>state.cart)
 
   useEffect(() => {
     const handleClickOutside = (e:MouseEvent) => {
@@ -107,12 +110,12 @@ const Nav = ({ user }: { user: IUser }) => {
         
         {user.role == "user" && 
         <Link
-          href={""}
+          href={"/user/cart"}
           className="relative bg-white rounded-full w-11 h-11 flex items-center justify-center shadow-md hover:scale-105 transition"
         >
           <ShoppingCartIcon className="text-blue-600 w-6 h-6" />
           <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full font-semibold shadow">
-            0
+            {cartData.length}
           </span>
         </Link>}
 
@@ -180,7 +183,7 @@ const Nav = ({ user }: { user: IUser }) => {
 
                 {user.role == "user" && 
                 <Link
-                  href={""}
+                  href={"/user/my-order"}
                   className="flex items-center gap-2 px-3 py-3 hover:bg-blue-50 rounded-lg text-gray-700 font-medium"
                   onClick={() => setOpen(false)}
                 >

@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import Provider from "@/provider";
+import StoreProvider from "@/redux/StoreProvider";
+import InitUser from "@/initUser";
 
 export const metadata: Metadata = {
   title: "Grocery Cart",
@@ -17,7 +19,12 @@ export default function RootLayout({
       lang="en"
     >
       <body className="min-h-screen w-full bg-linear-to-b from-blue-100 to-white">
-        <Provider>{children}</Provider>
+        <Provider>
+          <StoreProvider>
+            <InitUser/>
+            {children}
+          </StoreProvider>
+        </Provider>
         </body>
     </html>
   );
