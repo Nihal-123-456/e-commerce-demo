@@ -78,9 +78,12 @@ const Cart = () => {
               className="space-y-4"
             >
               <AnimatePresence mode="popLayout">
-                {cartData.map((item) => (
+                {cartData.map((item) => {
+                  const itemId = item._id?.toString() ?? `${item.name}-${item.category}`
+
+                  return (
                   <motion.div
-                    key={item._id.toString()}
+                    key={itemId}
                     variants={itemVariants}
                     initial="hidden"
                     animate="visible"
@@ -112,7 +115,7 @@ const Cart = () => {
                           whileHover={{ scale: 1.06 }}
                           whileTap={{ scale: 0.92 }}
                           className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-50 text-blue-700 transition-colors hover:bg-blue-100"
-                          onClick={() => dispatch(removeFromCart(item._id))}
+                          onClick={() => dispatch(removeFromCart(itemId))}
                         >
                           <Trash size={18} />
                         </motion.button>
@@ -121,7 +124,7 @@ const Cart = () => {
                             whileHover={{ scale: 1.08 }}
                             whileTap={{ scale: 0.92 }}
                             className="flex h-8 w-8 items-center justify-center rounded-full bg-white text-blue-700 shadow-sm transition-colors hover:bg-blue-100"
-                            onClick={() => dispatch(decreaseQuantity(item._id))}
+                            onClick={() => dispatch(decreaseQuantity(itemId))}
                           >
                             <Minus size={14} />
                           </motion.button>
@@ -132,7 +135,7 @@ const Cart = () => {
                             whileHover={{ scale: 1.08 }}
                             whileTap={{ scale: 0.92 }}
                             className="flex h-8 w-8 items-center justify-center rounded-full bg-white text-blue-700 shadow-sm transition-colors hover:bg-blue-100"
-                            onClick={() => dispatch(increaseQuantity(item._id))}
+                            onClick={() => dispatch(increaseQuantity(itemId))}
                           >
                             <Plus size={14} />
                           </motion.button>
@@ -140,7 +143,8 @@ const Cart = () => {
                       </div>
                     </div>
                   </motion.div>
-                ))}
+                  )
+                })}
               </AnimatePresence>
             </motion.div>
 

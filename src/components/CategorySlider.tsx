@@ -1,10 +1,16 @@
 'use client'
 
-import { Apple, Baby, Box, ChevronLeft, ChevronRight, Coffee, Cookie, Flame, Heart, HomeIcon, Milk, Wheat } from 'lucide-react'
+import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { motion, type Variants } from 'motion/react'
 import { useEffect, useRef, useState } from 'react'
 
-const CategorySlider = () => {
+type CategorySliderProps = {
+  categories: string[]
+  selectedCategory: string | null
+  onSelectCategory: (category: string) => void
+}
+
+const CategorySlider = ({ categories, selectedCategory, onSelectCategory }: CategorySliderProps) => {
   const containerVariants: Variants = {
     hidden: { opacity: 0, y: 24 },
     visible: {
@@ -23,17 +29,17 @@ const CategorySlider = () => {
     visible: { opacity: 1, y: 0, scale: 1 },
   }
 
-  const categories = [
-    {id:1, name:"Fruits & Vegetables", icon: Apple, color: "bg-green-100"}, 
-    {id:2, name:"Dairy & Eggs", icon: Milk, color: "bg-green-100"}, 
-    {id:3, name:"Rice & Grains", icon: Wheat, color: "bg-yellow-100"}, 
-    {id:4, name:"Snacks & Biscuits", icon: Cookie, color: "bg-orange-100"}, 
-    {id:5, name: "Spices & Masalas", icon: Flame, color: "bg-pink-100"}, 
-    {id:6, name:"Beverages & Drinks", icon: Coffee, color: "bg-red-100"}, 
-    {id:7, name:"Personal Care", icon: Heart, color: "bg-blue-100"}, 
-    {id:8, name:"Household Essentials", icon: HomeIcon, color: "bg-purple-100"}, 
-    {id:9, name: "Package Food", icon: Box, color: "bg-teal-100"}, 
-    {id:10, name: "Baby & Pet Care", icon: Baby, color: "bg-rose-100"}
+  const colors = [
+    "bg-green-100",
+    "bg-yellow-100",
+    "bg-orange-100",
+    "bg-pink-100",
+    "bg-red-100",
+    "bg-blue-100",
+    "bg-purple-100",
+    "bg-teal-100",
+    "bg-rose-100",
+    "bg-emerald-100",
   ]
 
   const [showLeft, setShowLeft] = useState<boolean>()
@@ -82,23 +88,27 @@ const CategorySlider = () => {
         {showLeft && <button className='absolute left-2 top-1/2 z-10 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-blue-100 bg-white text-blue-700 shadow-lg shadow-blue-200/60 transition-all duration-200 hover:-translate-x-0.5 hover:bg-blue-600 hover:text-white hover:shadow-blue-300 sm:left-4' onClick={()=> scroll("left")}><ChevronLeft className='h-5 w-5'/></button>}
         
         <div ref={scrollRef} className='flex gap-4 overflow-x-auto scroll-smooth px-1 pb-3 pt-1 [-ms-overflow-style:none] scrollbar-none [&::-webkit-scrollbar]:hidden sm:gap-5'>
-            {categories.map((cat) => {
-                const Icon = cat.icon
-                return <motion.div
-                    key={cat.id}
+            {categories.map((cat, index) => {
+                const isActive = selectedCategory === cat
+                const color = colors[index % colors.length]
+
+                return <motion.button
+                    key={cat}
+                    type="button"
                     variants={cardVariants}
                     whileHover={{ y: -6, scale: 1.04 }}
                     whileTap={{ scale: 0.98 }}
                     transition={{ type: "spring", stiffness: 360, damping: 24 }}
-                    className='group min-w-36 shrink-0 cursor-pointer rounded-3xl border border-blue-100 bg-white p-4 text-center shadow-md shadow-blue-100/80 transition-colors duration-200 hover:border-blue-300 hover:bg-blue-50 sm:min-w-40 sm:p-5'
+                    onClick={() => onSelectCategory(cat)}
+                    className={`group min-w-36 shrink-0 cursor-pointer rounded-3xl border p-4 text-center shadow-md transition-colors duration-200 sm:min-w-40 sm:p-5 ${isActive ? 'border-blue-500 bg-blue-600 text-white shadow-blue-200' : 'border-blue-100 bg-white text-slate-700 shadow-blue-100/80 hover:border-blue-300 hover:bg-blue-50'}`}
                 >
                     <div className='flex h-full flex-col items-center justify-center gap-3'>
-                        <span className={`flex h-14 w-14 items-center justify-center rounded-2xl ${cat.color} text-blue-700 shadow-inner shadow-white/70 transition-transform duration-200 group-hover:scale-110 sm:h-16 sm:w-16`}>
-                            <Icon className='h-7 w-7 sm:h-8 sm:w-8' />
+                        <span className={`flex h-14 w-14 items-center justify-center rounded-2xl ${isActive ? 'bg-white/20 text-white' : `${color} text-blue-700`} shadow-inner shadow-white/70 transition-transform duration-200 group-hover:scale-110 sm:h-16 sm:w-16`}>
+                            <span className='text-lg font-semibold'>{cat.charAt(0).toUpperCase()}</span>
                         </span>
-                        <p className='min-h-10 text-sm font-bold leading-5 text-slate-700 transition-colors duration-200 group-hover:text-blue-800 sm:text-base'>{cat.name}</p>
+                        <p className={`min-h-10 text-sm font-bold leading-5 transition-colors duration-200 sm:text-base ${isActive ? 'text-white' : 'text-slate-700 group-hover:text-blue-800'}`}>{cat}</p>
                     </div>
-                </motion.div>
+                </motion.button>
             })}
         </div>
 

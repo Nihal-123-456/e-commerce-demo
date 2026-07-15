@@ -6,6 +6,7 @@ import { motion } from 'motion/react'
 import { ChangeEvent, FormEvent, useState } from 'react'
 import Image from 'next/image'
 import axios from 'axios'
+import { useRouter } from 'next/navigation'
 
 const AddGrocery = () => {
   const fieldVariants = {
@@ -26,6 +27,7 @@ const AddGrocery = () => {
   const [preview, setPreview] = useState<string|null>()
   const [backendImage, setBackendImage] = useState<File|null>()
   const [loading, setLoading] = useState(false)
+  const router = useRouter()
 
   const handleImageChange = (e:ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files
@@ -49,6 +51,7 @@ const AddGrocery = () => {
         }
         await axios.post("/api/admin/add-grocery", formData)
         setLoading(false)
+        router.replace("/admin/view-grocery")
     } catch(error) {
         console.log(error);
         setLoading(false)
