@@ -190,7 +190,7 @@ const ViewGrocery = () => {
           variants={containerVariants}
           initial="hidden"
           animate="visible"
-          className="grid gap-5 sm:grid-cols-2 xl:grid-cols-4"
+          className="grid gap-5 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4"
         >
           {filtered.map((g) => (
             <motion.div
