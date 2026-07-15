@@ -3,8 +3,6 @@
 import React, { useEffect, useState } from 'react'
 import { BadgePercent, ShoppingBasket, Truck } from 'lucide-react'
 import { AnimatePresence, motion } from 'motion/react'
-import { useSelector } from 'react-redux'
-import { RootState } from '@/redux/store'
 
 const HeroSection = () => {
   const slides = [

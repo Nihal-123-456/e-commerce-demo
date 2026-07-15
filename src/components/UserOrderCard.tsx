@@ -1,13 +1,51 @@
 'use client'
 
-import { IOrder } from '@/models/order.model'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { AnimatePresence, motion, type Variants } from 'motion/react'
-import { ChevronDown, ChevronUp, CreditCard, MapPin, Package, Truck } from 'lucide-react'
+import { ChevronDown, ChevronUp, CreditCard, MapPin, Package, Truck, UserCheck } from 'lucide-react'
 import Image from 'next/image'
+import { getSocket } from '@/lib/socket'
+import { IUser } from '@/models/user.model'
+import mongoose from 'mongoose'
+import { useRouter } from 'next/navigation'
+
+interface IOrder {
+    _id?: mongoose.Types.ObjectId,
+    user: mongoose.Types.ObjectId,
+    items: [
+        {
+            grocery: mongoose.Types.ObjectId,
+            name: string,
+            price: string,
+            unit: string,
+            image: string,
+            quantity: number
+        }
+    ],
+    isPaid: boolean,
+    totalAmount: number,
+    paymentMethod: "cod" | "online",
+    address: {
+        fullName: string,
+        city: string,
+        state: string,
+        pincode: string,
+        fullAddress: string,
+        mobile: string,
+        latitude: number,
+        longitude: number
+    },
+    assignment?: mongoose.Types.ObjectId,
+    assignedDeliveryMan?: IUser, 
+    status: "pending" | "out for delivery" | "delivered",
+    createdAt?: Date,
+    updatedAt?: Date
+}
 
 const UserOrderCard = ({order}:{order:IOrder}) => {
   const [expanded, setExpanded] = useState(false)
+  const [status, setStatus] = useState(order.status)
+  const router = useRouter()
 
   const getStatusColor = (status:string) => {
     switch(status) {
@@ -32,6 +70,17 @@ const UserOrderCard = ({order}:{order:IOrder}) => {
     visible: { opacity: 1, height: "auto", y: 0 },
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  useEffect(():any=>{
+    const socket = getSocket()
+    socket.on("order-status-update", (data) => {
+      if(data.orderId.toString() === order._id?.toString()){
+        setStatus(data.status)
+      }
+    })
+    return () => socket.off("order-status-update")
+  }, [])
+
   return (
     <motion.div
       variants={cardVariants}
@@ -51,14 +100,45 @@ const UserOrderCard = ({order}:{order:IOrder}) => {
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2 sm:justify-end">
-          <span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-bold uppercase tracking-[0.18em] text-blue-700">
+          {status !== "delivered" && <span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-bold uppercase tracking-[0.18em] text-blue-700">
             {order.isPaid ? "Paid" : "Unpaid"}
-          </span>
-          <span className={`rounded-full border px-3 py-1 text-xs font-bold uppercase tracking-[0.18em] ${getStatusColor(order.status)}`}>
-            {order.status}
+          </span>}
+          <span className={`rounded-full border px-3 py-1 text-xs font-bold uppercase tracking-[0.18em] ${getStatusColor(status)}`}>
+            {status}
           </span>
         </div>
       </div>
+
+      {order.assignedDeliveryMan && <>
+        <div
+          id='deliveryManDetails'
+          className='mt-4 mx-4 flex flex-col gap-4 rounded-2xl border border-blue-100 bg-blue-50/60 p-4 shadow-sm shadow-blue-100/50 sm:flex-row sm:items-center sm:justify-between'
+        >
+          <div className='flex min-w-0 items-start gap-3'>
+            <div className='flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white text-blue-700 shadow-sm shadow-blue-100/60'>
+              <UserCheck size={18}/>
+            </div>
+            <div className='min-w-0'>
+              <p className='text-xs font-semibold uppercase tracking-[0.18em] text-slate-400'>Delivery man</p>
+              <p className='mt-1 wrap-break-word text-sm font-semibold text-slate-900'>
+                Assigned to: <span className='text-blue-700'>{order.assignedDeliveryMan.name}</span>
+              </p>
+              <p className='mt-1 text-sm font-medium text-slate-600'>📞 {order.assignedDeliveryMan.mobile}</p>
+            </div>
+          </div>
+          <a
+            href={`tel:${order.assignedDeliveryMan.mobile}`}
+            className='inline-flex items-center justify-center rounded-full bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-md shadow-blue-300/60 transition-all duration-200 hover:bg-blue-700 hover:shadow-blue-400/60'
+          >
+            Call
+          </a>
+        </div>
+        <button className='w-[90%] md:w-[97%] mx-auto mt-3 flex items-center justify-center gap-2 bg-blue-600 text-white font-semibold py-2 rounded-xl shadow hover:bg-blue-700 transition' onClick={() => router.push(`/user/track-order/${order._id!.toString()}`)}>
+          <Truck size={18}/> 
+          Track Your Order
+        </button>
+        </>
+      }
 
       <div className="grid gap-4 p-5 sm:grid-cols-[minmax(0,1.1fr)_auto] sm:items-start">
         <div className="space-y-3 text-sm text-slate-600">
@@ -70,12 +150,12 @@ const UserOrderCard = ({order}:{order:IOrder}) => {
           </div>
           <div className="flex items-start gap-2 rounded-2xl bg-blue-50/70 px-4 py-3">
             <MapPin size={16} className="shrink-0 text-blue-700" />
-            <span className="min-w-0 break-words font-medium leading-6">{order.address.fullAddress}</span>
+            <span className="min-w-0 wrap-break-word font-medium leading-6">{order.address.fullAddress}</span>
           </div>
           <div className="flex items-start gap-2 rounded-2xl bg-blue-50/70 px-4 py-3">
             <Truck size={16} className="mt-0.5 shrink-0 text-blue-700" />
             <span className="min-w-0 font-medium">
-              Delivery: <span className="font-semibold text-blue-700">{order.status}</span>
+              Delivery: <span className="font-semibold text-blue-700">{status}</span>
             </span>
           </div>
         </div>
@@ -123,7 +203,7 @@ const UserOrderCard = ({order}:{order:IOrder}) => {
                       <Image src={item.image} alt={item.name} fill className="object-cover" />
                     </div>
                     <div className="min-w-0">
-                      <p className="break-words font-semibold text-slate-900">{item.name}</p>
+                      <p className="wrap-break-word font-semibold text-slate-900">{item.name}</p>
                       <p className="text-sm text-slate-500">
                         {item.quantity} x {item.unit}
                       </p>
