@@ -4,7 +4,11 @@ import Google from "next-auth/providers/google"
 import connectDb from "./lib/db"
 import User from "./models/user.model"
 import bcrypt from "bcryptjs"
- 
+
+const normalizeEmail = (value: string) => value.trim().toLowerCase()
+
+const escapeRegExp = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
+
 export const { handlers, signIn, signOut, auth } = NextAuth({
   providers: [
     Credentials({
@@ -21,9 +25,18 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           throw new Error("Invalid credentials")
         }
 
-        const userExist = await User.findOne({ email })
+        const normalizedEmail = normalizeEmail(email)
+
+        const userExist = await User.findOne({
+          email: { $regex: `^${escapeRegExp(normalizedEmail)}$`, $options: "i" },
+        })
+
         if(!userExist) {
           throw new Error("User does not exist")
+        }
+
+        if (!userExist.password) {
+          throw new Error("Please sign in with Google or reset your password")
         }
 
         const isPasswordCorrect = await bcrypt.compare(password, userExist.password)
@@ -33,7 +46,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
         return {
           id: userExist._id.toString(),
-          email: userExist.email,
+          email: userExist.email.toLowerCase(),
           name: userExist.name,
           role: userExist.role,
         }
@@ -48,11 +61,15 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     async signIn({user, account}) {
       if(account?.provider === "google") {
         await connectDb()
-        let dbUser = await User.findOne({email: user.email})
+        const normalizedEmail = user.email ? normalizeEmail(user.email) : ""
+        let dbUser = await User.findOne({
+          email: { $regex: `^${escapeRegExp(normalizedEmail)}$`, $options: "i" },
+        })
         if(!dbUser) {
-          dbUser = await User.create({email: user.email, name: user.name, image: user.image})
+          dbUser = await User.create({email: normalizedEmail, name: user.name, image: user.image})
         }
         user.id = dbUser._id.toString();
+        user.email = normalizedEmail;
         user.role = dbUser.role;
       }
       return true

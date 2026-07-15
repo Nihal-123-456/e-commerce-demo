@@ -1,31 +1,38 @@
 'use client'
 
-import { ArrowLeft, Key, Loader2, LogIn, Mail, User } from 'lucide-react'
+import { Key, Loader2, LogIn, Mail } from 'lucide-react'
 import React, {useState} from 'react'
 import { motion } from "motion/react"
 import GoogleImage from "@/assets/google_logo.png"
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
-import axios from 'axios'
-import { signIn, useSession } from 'next-auth/react'
+import { signIn } from 'next-auth/react'
 
 const Login = () => {
     const [email, setEmail] = useState("")
     const [password, setPassword] = useState("")
     const [loading, setLoading] = useState(false)
+    const [error, setError] = useState("")
     const router = useRouter()
-    const session = useSession()
-    console.log(session);
 
     const handleSignin = async (e:React.FormEvent) => {
         e.preventDefault()
         setLoading(true)
+        setError("")
+
         try {
-            await signIn("credentials", {email, password})
-            router.push("/")
-            setLoading(false)
-        } catch(error) {
-            console.log(error);
+            const result = await signIn("credentials", { email, password, redirect: false })
+
+            if (result?.error) {
+                setError("Invalid email or password")
+                return
+            }
+
+            router.replace("/")
+        } catch (error) {
+            console.error(error)
+            setError("Unable to sign you in right now")
+        } finally {
             setLoading(false)
         }
     }
@@ -59,6 +66,10 @@ const Login = () => {
                   })()
               }
   
+              {error ? (
+                  <p className="text-sm text-red-600 text-center">{error}</p>
+              ) : null}
+
               <div className="flex items-center gap-2 text-gray-400 text-sm mt-2">
                   <span className="flex-1 h-px bg-gray-200"></span>
                   OR

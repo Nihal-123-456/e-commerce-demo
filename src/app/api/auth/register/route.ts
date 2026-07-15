@@ -6,12 +6,26 @@ import bcrypt from "bcryptjs"
 export async function POST(req:NextRequest) {
     try {
         await connectDb()
-        const {name, email, password} = await req.json()
-        const userExist = await User.findOne({email})
+        const body = await req.json()
+        const name = typeof body?.name === "string" ? body.name.trim() : ""
+        const email = typeof body?.email === "string" ? body.email.trim().toLowerCase() : ""
+        const password = typeof body?.password === "string" ? body.password : ""
+
+        if (!name || !email || !password) {
+            return NextResponse.json(
+                {message: "Name, email, and password are required"},
+                {status: 400}
+            )
+        }
+
+        const normalizedEmail = email.trim().toLowerCase()
+        const userExist = await User.findOne({
+            email: { $regex: `^${normalizedEmail.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`, $options: "i" },
+        })
 
         if(userExist) {
             return NextResponse.json(
-                {message: "User with this email already exist"},
+                {message: "User with this email already exists"},
                 {status: 400}
             )
         }
@@ -25,7 +39,7 @@ export async function POST(req:NextRequest) {
 
         const passwordHash = await bcrypt.hash(password, 10)
 
-        const user = await User.create({name, email, password:passwordHash})
+        const user = await User.create({name, email: normalizedEmail, password:passwordHash})
         return NextResponse.json(user, {status: 201})
     } catch (error) {
         return NextResponse.json(
