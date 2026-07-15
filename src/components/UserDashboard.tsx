@@ -22,7 +22,7 @@ const UserDashboard = async ({groceryList}:{groceryList:IGrocery[]}) => {
             {groceryList.length} items available
           </p>
         </div>
-        <div className='grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'>
+        <div className='grid gap-5 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4'>
           {groceryList.map((item:any, index) => (
             <GroceryItemCard item={item} key={index}/>
           ))}
