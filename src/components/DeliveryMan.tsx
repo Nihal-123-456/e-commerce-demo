@@ -3,11 +3,21 @@ import DeliveryManDashboard from './DeliveryManDashboard'
 import { auth } from '@/auth'
 import connectDb from '@/lib/db'
 import Order from '@/models/order.model'
+import { redirect } from 'next/navigation'
 
 const DeliveryMan = async () => {
-  await connectDb()
   const session = await auth()
-  const deliveryManId = session?.user?.id
+
+  if (!session?.user) {
+    redirect('/landing')
+  }
+
+  if (session.user.role !== 'deliveryMan') {
+    redirect('/unauthorized')
+  }
+
+  await connectDb()
+  const deliveryManId = session.user.id
   const orders = await Order.find({
     assignedDeliveryMan: deliveryManId,
     deliveryOtpVerification: true

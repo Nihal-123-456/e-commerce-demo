@@ -3,8 +3,11 @@
 import Link from 'next/link'
 import { ArrowRight, BadgeCheck, Leaf, PackageCheck, ShieldCheck, ShoppingBasket, Sparkles, Truck } from 'lucide-react'
 import { motion, type Variants } from 'motion/react'
+import { useSession } from 'next-auth/react'
 
 const LandingPage = () => {
+  const { data: session, status } = useSession()
+  const isAuthenticated = status === 'authenticated' && !!session?.user
   const containerVariants: Variants = {
     hidden: { opacity: 0, y: 24 },
     visible: {
@@ -49,20 +52,29 @@ const LandingPage = () => {
         <Link href="/" className="text-2xl font-black tracking-wide text-blue-800">
           GroceryCart
         </Link>
-        <div className="flex items-center gap-3">
+        {!isAuthenticated ? (
+          <div className="flex items-center gap-3">
+            <Link
+              href="/login"
+              className="rounded-full border border-blue-100 bg-white px-4 py-2 text-sm font-semibold text-blue-700 shadow-sm shadow-blue-100 transition-colors hover:bg-blue-50"
+            >
+              Login
+            </Link>
+            <Link
+              href="/register"
+              className="rounded-full bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-md shadow-blue-300/60 transition-all hover:-translate-y-0.5 hover:bg-blue-700"
+            >
+              Register
+            </Link>
+          </div>
+        ) : (
           <Link
-            href="/login"
+            href="/"
             className="rounded-full border border-blue-100 bg-white px-4 py-2 text-sm font-semibold text-blue-700 shadow-sm shadow-blue-100 transition-colors hover:bg-blue-50"
           >
-            Login
+            Open app
           </Link>
-          <Link
-            href="/register"
-            className="rounded-full bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-md shadow-blue-300/60 transition-all hover:-translate-y-0.5 hover:bg-blue-700"
-          >
-            Register
-          </Link>
-        </div>
+        )}
       </header>
 
       <main className="mx-auto flex w-full max-w-7xl flex-col gap-10 px-4 pb-16 sm:px-6 lg:px-8 lg:pb-24">
@@ -87,19 +99,31 @@ const LandingPage = () => {
             </motion.p>
 
             <motion.div variants={itemVariants} className="mt-8 flex flex-col gap-3 sm:flex-row">
-              <Link
-                href="/register"
-                className="inline-flex items-center justify-center gap-2 rounded-full bg-blue-600 px-6 py-3 text-sm font-semibold text-white shadow-md shadow-blue-300/60 transition-all hover:-translate-y-0.5 hover:bg-blue-700"
-              >
-                Get started
-                <ArrowRight className="h-4 w-4" />
-              </Link>
-              <Link
-                href="/login"
-                className="inline-flex items-center justify-center rounded-full border border-blue-100 bg-white px-6 py-3 text-sm font-semibold text-blue-700 shadow-sm shadow-blue-100 transition-colors hover:bg-blue-50"
-              >
-                Already a member?
-              </Link>
+              {!isAuthenticated ? (
+                <>
+                  <Link
+                    href="/register"
+                    className="inline-flex items-center justify-center gap-2 rounded-full bg-blue-600 px-6 py-3 text-sm font-semibold text-white shadow-md shadow-blue-300/60 transition-all hover:-translate-y-0.5 hover:bg-blue-700"
+                  >
+                    Get started
+                    <ArrowRight className="h-4 w-4" />
+                  </Link>
+                  <Link
+                    href="/login"
+                    className="inline-flex items-center justify-center rounded-full border border-blue-100 bg-white px-6 py-3 text-sm font-semibold text-blue-700 shadow-sm shadow-blue-100 transition-colors hover:bg-blue-50"
+                  >
+                    Already a member?
+                  </Link>
+                </>
+              ) : (
+                <Link
+                  href="/"
+                  className="inline-flex items-center justify-center gap-2 rounded-full bg-blue-600 px-6 py-3 text-sm font-semibold text-white shadow-md shadow-blue-300/60 transition-all hover:-translate-y-0.5 hover:bg-blue-700"
+                >
+                  Go to your dashboard
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
+              )}
             </motion.div>
 
             <motion.div variants={itemVariants} className="mt-6 flex flex-wrap gap-3 text-sm text-slate-500">
@@ -178,10 +202,17 @@ const LandingPage = () => {
               <p className="text-sm font-semibold uppercase tracking-[0.2em] text-blue-600">How it works</p>
               <h2 className="mt-2 text-3xl font-black text-slate-900 sm:text-4xl">A simple 3-step experience from cart to doorstep.</h2>
             </div>
-            <Link href="/register" className="inline-flex items-center gap-2 rounded-full bg-blue-600 px-5 py-3 text-sm font-semibold text-white transition-all hover:-translate-y-0.5 hover:bg-blue-700">
-              Create your account
-              <ArrowRight className="h-4 w-4" />
-            </Link>
+            {!isAuthenticated ? (
+              <Link href="/register" className="inline-flex items-center gap-2 rounded-full bg-blue-600 px-5 py-3 text-sm font-semibold text-white transition-all hover:-translate-y-0.5 hover:bg-blue-700">
+                Create your account
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+            ) : (
+              <Link href="/" className="inline-flex items-center gap-2 rounded-full bg-blue-600 px-5 py-3 text-sm font-semibold text-white transition-all hover:-translate-y-0.5 hover:bg-blue-700">
+                Open the app
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+            )}
           </div>
 
           <div className="mt-8 grid gap-4 lg:grid-cols-3">
@@ -203,14 +234,20 @@ const LandingPage = () => {
               <p className="text-sm font-semibold uppercase tracking-[0.2em] text-blue-300">Ready to shop?</p>
               <h2 className="mt-2 text-3xl font-black sm:text-4xl">Start building your basket today.</h2>
             </div>
-            <div className="flex flex-col gap-3 sm:flex-row">
-              <Link href="/register" className="inline-flex items-center justify-center rounded-full bg-white px-6 py-3 text-sm font-semibold text-slate-900 transition-all hover:-translate-y-0.5 hover:bg-blue-50">
-                Sign up now
+            {!isAuthenticated ? (
+              <div className="flex flex-col gap-3 sm:flex-row">
+                <Link href="/register" className="inline-flex items-center justify-center rounded-full bg-white px-6 py-3 text-sm font-semibold text-slate-900 transition-all hover:-translate-y-0.5 hover:bg-blue-50">
+                  Sign up now
+                </Link>
+                <Link href="/login" className="inline-flex items-center justify-center rounded-full border border-white/15 bg-white/10 px-6 py-3 text-sm font-semibold text-white transition-all hover:bg-white/20">
+                  I already have an account
+                </Link>
+              </div>
+            ) : (
+              <Link href="/" className="inline-flex items-center justify-center rounded-full bg-white px-6 py-3 text-sm font-semibold text-slate-900 transition-all hover:-translate-y-0.5 hover:bg-blue-50">
+                Open the app
               </Link>
-              <Link href="/login" className="inline-flex items-center justify-center rounded-full border border-white/15 bg-white/10 px-6 py-3 text-sm font-semibold text-white transition-all hover:bg-white/20">
-                I already have an account
-              </Link>
-            </div>
+            )}
           </div>
         </motion.section>
       </main>

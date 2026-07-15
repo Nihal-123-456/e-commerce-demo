@@ -1,12 +1,12 @@
 'use client'
 
 import { Key, Loader2, LogIn, Mail } from 'lucide-react'
-import React, {useState} from 'react'
+import React, {useEffect, useState} from 'react'
 import { motion } from "motion/react"
 import GoogleImage from "@/assets/google_logo.png"
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
-import { signIn } from 'next-auth/react'
+import { signIn, useSession } from 'next-auth/react'
 
 const Login = () => {
     const [email, setEmail] = useState("")
@@ -14,6 +14,13 @@ const Login = () => {
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState("")
     const router = useRouter()
+    const { status } = useSession()
+
+    useEffect(() => {
+        if (status === 'authenticated') {
+            router.replace('/')
+        }
+    }, [router, status])
 
     const handleSignin = async (e:React.FormEvent) => {
         e.preventDefault()
@@ -37,6 +44,10 @@ const Login = () => {
         }
     }
   
+    if (status === 'loading' || status === 'authenticated') {
+        return null
+    }
+
     return (
       <div className="flex flex-col items-center justify-center min-h-screen px-6 py-10 bg-white relative">
   

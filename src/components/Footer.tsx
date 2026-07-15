@@ -3,9 +3,13 @@
 import { Mail, MapPin, Phone, ArrowUpRight } from "lucide-react"
 import { FaFacebookF, FaInstagram, FaLinkedinIn, FaXTwitter } from "react-icons/fa6"
 import { motion, type Variants } from "motion/react"
+import { useSession } from "next-auth/react"
 import Link from "next/link"
 
 const Footer = () => {
+  const { data: session, status } = useSession()
+  const isAuthenticated = status === "authenticated" && !!session?.user
+
   const containerVariants: Variants = {
     hidden: { opacity: 0, y: 18 },
     visible: {
@@ -48,17 +52,17 @@ const Footer = () => {
             </p>
             <div className="flex flex-wrap gap-3">
               <Link
-                href="/"
+                href={isAuthenticated ? "/" : "/login"}
                 className="inline-flex items-center gap-2 rounded-2xl bg-white px-4 py-3 text-sm font-semibold text-blue-900 shadow-lg shadow-black/15 transition-all hover:-translate-y-0.5 hover:bg-blue-50"
               >
-                Shop Now
+                {isAuthenticated ? "Shop Now" : "Login"}
                 <ArrowUpRight className="h-4 w-4" />
               </Link>
               <Link
-                href="/user/cart"
+                href={isAuthenticated ? "/user/cart" : "/register"}
                 className="inline-flex items-center gap-2 rounded-2xl border border-white/15 bg-white/5 px-4 py-3 text-sm font-semibold text-white transition-all hover:-translate-y-0.5 hover:bg-white/10"
               >
-                View Cart
+                {isAuthenticated ? "View Cart" : "Register"}
                 <ArrowUpRight className="h-4 w-4" />
               </Link>
             </div>
@@ -74,23 +78,24 @@ const Footer = () => {
                 </Link>
               </li>
               <li>
-                <Link href="/user/cart" className="inline-flex items-center gap-2 transition-colors hover:text-white">
+                <Link href={isAuthenticated ? "/user/cart" : "/register"} className="inline-flex items-center gap-2 transition-colors hover:text-white">
                   <span className="h-2 w-2 rounded-full bg-blue-400" />
-                  Cart
+                  {isAuthenticated ? "View Cart" : "Register"}
                 </Link>
               </li>
+              <li>
+                <Link href={isAuthenticated ? "/user/my-order" : "/login"} className="inline-flex items-center gap-2 transition-colors hover:text-white">
+                  <span className="h-2 w-2 rounded-full bg-blue-400" />
+                  {isAuthenticated ? "My Orders" : "Login"}
+                </Link>
+              </li>
+              {isAuthenticated && 
               <li>
                 <Link href="/user/my-order" className="inline-flex items-center gap-2 transition-colors hover:text-white">
                   <span className="h-2 w-2 rounded-full bg-blue-400" />
-                  My Orders
-                </Link>
-              </li>
-              <li>
-                <Link href="/user/track-order" className="inline-flex items-center gap-2 transition-colors hover:text-white">
-                  <span className="h-2 w-2 rounded-full bg-blue-400" />
                   Track Order
                 </Link>
-              </li>
+              </li>}   
             </ul>
           </motion.div>
 

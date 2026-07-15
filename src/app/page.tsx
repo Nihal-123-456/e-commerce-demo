@@ -9,7 +9,6 @@ import GeoUpdater from "@/components/GeoUpdater";
 import DeliveryMan from "@/components/DeliveryMan";
 import Grocery, { IGrocery } from "@/models/grocery.model";
 import Footer from "@/components/Footer";
-import LandingPage from "@/components/LandingPage";
 
 export default async function Home(props:{
   searchParams: Promise<{q: string}>
@@ -19,24 +18,7 @@ export default async function Home(props:{
   await connectDb();
   const session = await auth();
 
-  if (!session?.user?.id) {
-    return (
-      <>
-        <LandingPage />
-        <Footer />
-      </>
-    );
-  }
-
-  const user = await User.findById(session.user.id);
-  if (!user) {
-    return (
-      <>
-        <LandingPage />
-        <Footer />
-      </>
-    );
-  }
+  const user = await User.findById(session?.user?.id);
 
   const incomplete =
     !user.role || !user.mobile || (!user.mobile && user.role == "user");
