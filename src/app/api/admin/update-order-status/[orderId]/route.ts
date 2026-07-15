@@ -17,7 +17,14 @@ export async function POST(req:NextRequest, {params}:{params: Promise<{orderId:s
     try {
         await connectDb()
         const {orderId} = await params
-        const {status} = await req.json()
+        const body = await req.json()
+        const status = typeof body?.status === "string" ? body.status.trim() : ""
+        const allowedStatuses = ["pending", "out for delivery", "delivered"] as const
+
+        if (!allowedStatuses.includes(status as (typeof allowedStatuses)[number])) {
+            return NextResponse.json({message: "Invalid order status"}, {status: 400})
+        }
+
         const order = await Order.findById(orderId).populate("user")
         if(!order){
             return NextResponse.json({message: "Order not found"}, {status: 404})
@@ -25,6 +32,14 @@ export async function POST(req:NextRequest, {params}:{params: Promise<{orderId:s
 
         order.status = status
         let deliveryMenPayload:IDeliveryMenPayload[] = []
+
+        if (status === "pending") {
+            if (order.assignment) {
+                await DeliveryAssignment.findByIdAndDelete(order.assignment)
+            }
+            order.assignment = null
+            order.assignedDeliveryMan = null
+        }
 
         if(status === "out for delivery" && !order.assignment){
             const {latitude, longitude} = order.address
