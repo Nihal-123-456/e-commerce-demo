@@ -9,7 +9,6 @@ import { useSession } from "next-auth/react";
 
 const EditRoleMobile = () => {
   const [roles, setRoles] = useState([
-    { id: "admin", label: "Admin", icon: UserCog },
     { id: "user", label: "User", icon: User },
     { id: "deliveryMan", label: "Delivery Man", icon: Bike },
   ]);
@@ -34,11 +33,16 @@ const EditRoleMobile = () => {
     const checkForAdmin = async () => {
       try {
         const result = await axios.get("/api/check-for-admin")
-        if(result.data.adminExist){
-          setRoles(prev => prev.filter(r => r.id !== "admin"))
+        if (!result.data.adminExist) {
+          setRoles((prev) => {
+            if (prev.some((role) => role.id === "admin")) {
+              return prev
+            }
+            return [...prev, { id: "admin", label: "Admin", icon: UserCog }]
+          })
         }
       } catch (error) {
-        console.log(error);
+        console.log(error)
       }
     }
     checkForAdmin()
