@@ -1,9 +1,8 @@
 'use client'
 
 import React, { FormEvent, useEffect, useRef, useState } from "react";
-import mongoose from "mongoose";
 import Link from "next/link";
-import { Boxes, ClipboardCheck, LogOut, Menu, Package, PlusCircle, Search, ShoppingCartIcon, User, X } from "lucide-react";
+import { Boxes, ClipboardCheck, LogIn, LogOut, Menu, Package, PlusCircle, Search, ShoppingCartIcon, User, UserPlus, X } from "lucide-react";
 import Image from "next/image";
 import { AnimatePresence, motion } from "motion/react";
 import { signOut } from "next-auth/react";
@@ -13,7 +12,7 @@ import { RootState } from "@/redux/store";
 import { useRouter } from "next/navigation";
 
 interface IUser {
-  _id?: mongoose.Types.ObjectId;
+  _id?: string;
   name: string;
   email: string;
   password?: string;
@@ -22,7 +21,7 @@ interface IUser {
   image: string;
 }
 
-const Nav = ({ user }: { user: IUser }) => {
+const Nav = ({ user }: { user: IUser | null }) => {
   const [open, setOpen] = useState(false);
   const profileDropDown = useRef<HTMLDivElement>(null)
   const [searchBarOpen, setSearchBarOpen] = useState(false)
@@ -30,6 +29,9 @@ const Nav = ({ user }: { user: IUser }) => {
   const {cartData} = useSelector((state:RootState)=>state.cart)
   const [search, setSearch] = useState("")
   const router = useRouter()
+
+  const isUser = user?.role === "user"
+  const isAdmin = user?.role === "admin"
 
   useEffect(() => {
     const handleClickOutside = (e:MouseEvent) => {
@@ -50,7 +52,7 @@ const Nav = ({ user }: { user: IUser }) => {
     setSearchBarOpen(false)
   }
 
-  const sideBar = menuOpen ? createPortal(
+  const sideBar = menuOpen && isAdmin && user ? createPortal(
     <AnimatePresence>
       <motion.div initial={{x:-100, opacity:0}} animate={{x:0, opacity:1}} exit={{x:100}} transition={{type: "spring", stiffness:100, damping:14}} className="fixed top-0 h-full w-[75%] sm:w-15 z-9999 bg-linear-to-b from-blue-800/90 via-blue-700/80 to-blue-900/90 backdrop-blur-xl border-r border-blue-400/20 shadow-[0_0_50px_-10px_rgba(0,255,100,0.3)] flex flex-col p-6 text-white">
         <div className="flex justify-between items-center mb-2">
@@ -77,7 +79,7 @@ const Nav = ({ user }: { user: IUser }) => {
           </div>
         </div>
 
-        <div className="flex flex-col gap-3 font-medium mt-6"> 
+        <div className="flex flex-col gap-3 font-medium mt-6">
             <Link href={"/admin/add-grocery"} className="flex items-center gap-3 p-3 rounded-lg bg-white/10 hover:bg-white/20 hover:pl-4 transition-all"><PlusCircle className="w-5 h-5"/> Add Grocery</Link>
             <Link href={"/admin/view-grocery"} className="flex items-center gap-3 p-3 rounded-lg bg-white/10 hover:bg-white/20 hover:pl-4 transition-all"><Boxes className="w-5 h-5"/> View Grocery</Link>
             <Link href={"/admin/manage-orders"} className="flex items-center gap-3 p-3 rounded-lg bg-white/10 hover:bg-white/20 hover:pl-4 transition-all"><ClipboardCheck className="w-5 h-5"/> Manage Orders</Link>
@@ -95,13 +97,13 @@ const Nav = ({ user }: { user: IUser }) => {
   return (
     <div className="w-[95%] fixed top-4 left-1/2 -translate-x-1/2 bg-linear-to-b from-blue-800 via-blue-700 to-slate-700 rounded-full shadow-lg shadow-black/30 flex justify-between items-center h-20 px-4 md:px-8 z-9999">
       <Link
-        href={"/"}
+        href={user ? "/" : "/landing"}
         className="text-white font-extrabold text-2xl sm:text-3xl tracking-wide hover:scale-05 transition-transform"
       >
         GroceryCart
       </Link>
 
-      {user.role == "user" && 
+      {isUser &&
       <form
         action=""
         className="hidden md:flex items-center bg-white rounded-full px-4 py-2 w-1/2 max-w-lg shadow-md" onSubmit={handleSearch}
@@ -115,12 +117,12 @@ const Nav = ({ user }: { user: IUser }) => {
       </form>}
 
       <div className="flex items-center gap-3 md:gap-6 relative">
-        {user.role == "user" && 
+        {isUser &&
         <div className="bg-white rounded-full w-11 h-11 flex items-center justify-center shadow-md hover:scale-105 transition md:hidden" onClick={()=>setSearchBarOpen((prev) => !prev)}>
           <Search className="w-6 h-6 text-blue-600"/>
         </div>}
-        
-        {user.role == "user" && 
+
+        {isUser &&
         <Link
           href={"/user/cart"}
           className="relative bg-white rounded-full w-11 h-11 flex items-center justify-center shadow-md hover:scale-105 transition"
@@ -131,7 +133,7 @@ const Nav = ({ user }: { user: IUser }) => {
           </span>
         </Link>}
 
-        {user.role == "admin" &&
+        {isAdmin &&
           <>
             <div className="hidden md:flex items-center gap-4">
               <Link href={"/admin/add-grocery"} className="flex items-center gap-2 bg-white text-blue-700 font-semibold px-4 py-2 rounded-full hover:bg-blue-100 transition-all"><PlusCircle className="w-5 h-5"/> Add Grocery</Link>
@@ -145,6 +147,7 @@ const Nav = ({ user }: { user: IUser }) => {
           </>
         }
 
+        {user ? (
         <div className="relative" ref={profileDropDown}>
           <div
             className="bg-white rounded-full w-11 h-11 flex items-center justify-center overflow-hidden shadow-md hover:scale-105 transition-transform"
@@ -193,7 +196,7 @@ const Nav = ({ user }: { user: IUser }) => {
                   </div>
                 </div>
 
-                {user.role == "user" && 
+                {isUser &&
                 <Link
                   href={"/user/my-order"}
                   className="flex items-center gap-2 px-3 py-3 hover:bg-blue-50 rounded-lg text-gray-700 font-medium"
@@ -202,7 +205,7 @@ const Nav = ({ user }: { user: IUser }) => {
                   <Package className="w-5 h-5 text-blue-600" />
                   My Orders
                 </Link>}
-                
+
                 <button className="flex items-center gap-2 w-full text-left px-3 py-3 hover:bg-red-50 rounded-lg text-gray-700 font-medium" onClick={()=>{
                   setOpen(false)
                   signOut({callbackUrl: "/login"})
@@ -215,7 +218,7 @@ const Nav = ({ user }: { user: IUser }) => {
           </AnimatePresence>
 
           <AnimatePresence>
-            {searchBarOpen && 
+            {searchBarOpen &&
             <motion.div initial={{ opacity: 0, y: -10, scale: 0.95 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               transition={{ duration: 0.7 }}
@@ -230,6 +233,24 @@ const Nav = ({ user }: { user: IUser }) => {
             </motion.div>}
           </AnimatePresence>
         </div>
+        ) : (
+        <div className="flex items-center gap-2 sm:gap-3">
+          <Link
+            href={"/login"}
+            className="flex items-center gap-2 rounded-full bg-white/10 px-3 py-2.5 text-sm font-semibold text-white transition-all hover:bg-white/20 sm:px-4"
+          >
+            <LogIn className="w-4 h-4" />
+            <span className="hidden sm:inline">Login</span>
+          </Link>
+          <Link
+            href={"/register"}
+            className="flex items-center gap-2 rounded-full bg-white px-3 py-2.5 text-sm font-semibold text-blue-700 shadow-md transition-all hover:bg-blue-50 sm:px-4"
+          >
+            <UserPlus className="w-4 h-4" />
+            <span className="hidden sm:inline">Register</span>
+          </Link>
+        </div>
+        )}
       </div>
       {sideBar}
     </div>

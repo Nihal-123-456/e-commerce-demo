@@ -3,11 +3,27 @@
 import Link from 'next/link'
 import { ArrowRight, BadgeCheck, Leaf, PackageCheck, ShieldCheck, ShoppingBasket, Sparkles, Truck } from 'lucide-react'
 import { motion, type Variants } from 'motion/react'
-import { useSession } from 'next-auth/react'
+import Nav from './Nav'
+import LandingProducts from './LandingProducts'
+import { IGrocery } from '@/models/grocery.model'
 
-const LandingPage = () => {
-  const { data: session, status } = useSession()
-  const isAuthenticated = status === 'authenticated' && !!session?.user
+interface IUser {
+  _id?: string;
+  name: string;
+  email: string;
+  password?: string;
+  mobile?: string;
+  role: "user" | "admin" | "deliveryMan";
+  image: string;
+}
+
+type LandingPageProps = {
+  user: IUser | null
+  groceryList: IGrocery[]
+}
+
+const LandingPage = ({ user, groceryList }: LandingPageProps) => {
+  const isAuthenticated = !!user
   const containerVariants: Variants = {
     hidden: { opacity: 0, y: 24 },
     visible: {
@@ -48,36 +64,9 @@ const LandingPage = () => {
 
   return (
     <div className="min-h-screen bg-linear-to-b from-slate-50 via-blue-50/70 to-white text-slate-900">
-      <header className="mx-auto flex w-full max-w-7xl items-center justify-between px-4 py-6 sm:px-6 lg:px-8">
-        <Link href="/" className="text-2xl font-black tracking-wide text-blue-800">
-          GroceryCart
-        </Link>
-        {!isAuthenticated ? (
-          <div className="flex items-center gap-3">
-            <Link
-              href="/login"
-              className="rounded-full border border-blue-100 bg-white px-4 py-2 text-sm font-semibold text-blue-700 shadow-sm shadow-blue-100 transition-colors hover:bg-blue-50"
-            >
-              Login
-            </Link>
-            <Link
-              href="/register"
-              className="rounded-full bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-md shadow-blue-300/60 transition-all hover:-translate-y-0.5 hover:bg-blue-700"
-            >
-              Register
-            </Link>
-          </div>
-        ) : (
-          <Link
-            href="/"
-            className="rounded-full border border-blue-100 bg-white px-4 py-2 text-sm font-semibold text-blue-700 shadow-sm shadow-blue-100 transition-colors hover:bg-blue-50"
-          >
-            Open app
-          </Link>
-        )}
-      </header>
+      <Nav user={user} />
 
-      <main className="mx-auto flex w-full max-w-7xl flex-col gap-10 px-4 pb-16 sm:px-6 lg:px-8 lg:pb-24">
+      <main className="mx-auto flex w-full max-w-7xl flex-col gap-10 px-4 pb-16 pt-30 sm:px-6 lg:px-8 lg:pb-24">
         <motion.section
           variants={containerVariants}
           initial="hidden"
@@ -173,6 +162,8 @@ const LandingPage = () => {
             </motion.div>
           </motion.div>
         </motion.section>
+
+        <LandingProducts groceryList={groceryList} role={user?.role} />
 
         <motion.section variants={containerVariants} initial="hidden" animate="visible" className="grid gap-5 lg:grid-cols-3">
           {features.map((feature, index) => {

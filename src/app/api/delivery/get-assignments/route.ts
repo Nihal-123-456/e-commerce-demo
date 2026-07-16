@@ -7,6 +7,10 @@ export async function GET(req:NextRequest) {
     try {
         await connectDb()
         const session = await auth()
+        if(session?.user?.role !== "deliveryMan") {
+            return NextResponse.json({message: "You are not a delivery man"}, {status: 400})
+        }
+        
         const assignments = await DeliveryAssignment.find({
             broadcastedTo: session?.user?.id,
             status: "broadcasted"

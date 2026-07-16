@@ -10,6 +10,10 @@ export async function GET(req:NextRequest, {params}:{params: Promise<{id:string}
         await connectDb()
         const {id} = await params
         const session = await auth()
+        if(session?.user?.role !== "deliveryMan") {
+            return NextResponse.json({message: "You are not a delivery man"}, {status: 400})
+        }
+
         const deliveryManId = session?.user?.id
         if(!deliveryManId){
             return NextResponse.json({message: "Unauthorized"}, {status: 400})

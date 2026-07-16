@@ -7,6 +7,10 @@ export async function GET(req:NextRequest) {
     try {
         await connectDb()
         const session = await auth()
+        if(session?.user?.role !== "user") {
+            return NextResponse.json({message: "You are not a customer"}, {status: 400})
+        }
+        
         const orders = await Order.find({user: session?.user?.id}).populate("user assignedDeliveryMan").sort({createdAt: -1})
         if(!orders) {
             return NextResponse.json({message: "No orders found"}, {status: 404})

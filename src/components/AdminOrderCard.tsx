@@ -43,10 +43,15 @@ interface IOrder {
     updatedAt?: Date
 }
 
-const AdminOrderCard = ({order}:{order:IOrder}) => {
+interface AdminOrderCardProps {
+  order: IOrder,
+  onStatusChange: (orderId: string, status: string) => void
+}
+
+const AdminOrderCard = ({order, onStatusChange}:AdminOrderCardProps) => {
   const statusOptions = ["pending", "out for delivery", "delivered"]
   const [expanded, setExpanded] = useState(false)
-  const [status, setStatus] = useState<string>("pending")
+  const status = order.status
 
   const cardVariants: Variants = {
     hidden: { opacity: 0, y: 18, scale: 0.98 },
@@ -68,28 +73,21 @@ const AdminOrderCard = ({order}:{order:IOrder}) => {
     try {
       const result = await axios.post(`/api/admin/update-order-status/${orderId}`, { status })
       console.log(result);
-      setStatus(status)
+      onStatusChange(orderId, status)
     } catch (error) {
       console.error(error);
     }
   }
 
-  useEffect(()=>{
-    const setUiStatus = () => {
-      setStatus(order.status)
-    }
-    setUiStatus()
-  }, [order])
-
   useEffect(():any=>{
       const socket = getSocket()
       socket.on("order-status-update", (data) => {
         if(data.orderId.toString() === order._id?.toString()){
-          setStatus(data.status)
+          onStatusChange(data.orderId.toString(), data.status)
         }
       })
       return () => socket.off("order-status-update")
-    }, [])
+    }, [order._id, onStatusChange])
 
   return (
     <motion.div

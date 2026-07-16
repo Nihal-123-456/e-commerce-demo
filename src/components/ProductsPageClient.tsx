@@ -1,19 +1,19 @@
 'use client'
 
 import React, { useMemo, useState } from 'react'
-import HeroSection from './HeroSection'
 import CategorySlider from './CategorySlider'
-import { IGrocery } from '@/models/grocery.model'
 import GroceryItemCard from './GroceryItemCard'
 import Pagination from './Pagination'
+import { IGrocery } from '@/models/grocery.model'
 
 const PAGE_SIZE = 12
 
-type UserDashboardProps = {
+type ProductsPageClientProps = {
   groceryList: IGrocery[]
+  role?: 'user' | 'admin' | 'deliveryMan'
 }
 
-const UserDashboard = ({ groceryList }: UserDashboardProps) => {
+const ProductsPageClient = ({ groceryList, role }: ProductsPageClientProps) => {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
   const [currentPage, setCurrentPage] = useState(1)
 
@@ -31,7 +31,6 @@ const UserDashboard = ({ groceryList }: UserDashboardProps) => {
     if (!selectedCategory) {
       return groceryList
     }
-
     return groceryList.filter((item) => item.category?.toLowerCase() === selectedCategory.toLowerCase())
   }, [groceryList, selectedCategory])
 
@@ -53,18 +52,24 @@ const UserDashboard = ({ groceryList }: UserDashboardProps) => {
   }
 
   return (
-    <main className='min-h-screen bg-linear-to-b from-slate-50 via-blue-50/60 to-white pb-16'>
-      <HeroSection />
+    <main className='min-h-screen bg-linear-to-b from-slate-50 via-blue-50/60 to-white px-4 pb-16 pt-30 sm:px-6 lg:px-8'>
+      <div className='mx-auto w-full max-w-7xl'>
+        <p className='text-sm font-semibold uppercase tracking-[0.18em] text-blue-600'>Catalog</p>
+        <h1 className='mt-1 text-3xl font-black text-slate-900 sm:text-4xl'>All Products</h1>
+      </div>
+
       <CategorySlider
         categories={categories}
         selectedCategory={selectedCategory}
         onSelectCategory={handleSelectCategory}
       />
-      <section className='mx-auto w-full max-w-7xl px-4 py-10 sm:px-6 lg:px-8'>
+
+      <section className='mx-auto w-full max-w-7xl'>
         <div className='mb-6 flex flex-wrap items-end justify-between gap-4'>
           <div>
-            <p className='text-sm font-semibold uppercase tracking-[0.18em] text-blue-600'>Browse</p>
-            <h2 className='mt-1 text-2xl font-extrabold text-slate-900 sm:text-3xl'>Grocery Items</h2>
+            {selectedCategory ? (
+              <p className='text-sm font-semibold uppercase tracking-[0.18em] text-blue-600'>Filtered by {selectedCategory}</p>
+            ) : null}
           </div>
           <div className='flex flex-wrap items-center gap-3'>
             {selectedCategory ? (
@@ -83,7 +88,7 @@ const UserDashboard = ({ groceryList }: UserDashboardProps) => {
         </div>
         <div className='grid gap-5 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4'>
           {paginatedItems.map((item, index) => (
-            <GroceryItemCard item={item} role='user' key={item._id?.toString() || `${item.name}-${index}`} />
+            <GroceryItemCard item={item} role={role} key={item._id?.toString() || `${item.name}-${index}`} />
           ))}
         </div>
         <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
@@ -92,4 +97,4 @@ const UserDashboard = ({ groceryList }: UserDashboardProps) => {
   )
 }
 
-export default UserDashboard
+export default ProductsPageClient

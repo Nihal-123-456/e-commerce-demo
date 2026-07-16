@@ -8,7 +8,7 @@ import { IUser } from '@/models/user.model'
 import mongoose from 'mongoose'
 import { useSelector } from 'react-redux'
 import { RootState } from '@/redux/store'
-import { ArrowLeft, MapPin, Package, Truck } from 'lucide-react'
+import { ArrowLeft, CheckCircle2, MapPin, Package, Truck } from 'lucide-react'
 import LiveMap from '@/components/LiveMap'
 import { getSocket } from '@/lib/socket'
 import { motion, type Variants } from 'motion/react'
@@ -106,6 +106,16 @@ const TrackOrder = ({params}:{params:{orderId:string}}) => {
     return ()=>socket.off("update-deliveryMan-location")
   }, [order])
 
+  useEffect(():any=>{
+    const socket = getSocket()
+    socket.on("order-status-update", (data) => {
+      if(data.orderId?.toString() === orderId?.toString()){
+        setOrder(prev => prev ? { ...prev, status: data.status } : prev)
+      }
+    })
+    return ()=>socket.off("order-status-update")
+  }, [orderId])
+
   return (
     <div className="min-h-screen bg-linear-to-b from-slate-50 via-blue-50/70 to-white px-4 py-8 sm:px-6 lg:px-8">
       <motion.div
@@ -150,50 +160,60 @@ const TrackOrder = ({params}:{params:{orderId:string}}) => {
             </div>
           </div>
 
-          <div className="grid gap-6 p-5 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start lg:p-8">
-            <div className="space-y-4">
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-bold uppercase tracking-[0.18em] text-blue-700">
-                  {order?.status}
-                </span>
-                <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-bold uppercase tracking-[0.18em] text-slate-600">
-                  Live map
-                </span>
+          {order?.status === "delivered" ? (
+            <div className="flex flex-col items-center gap-3 px-5 py-16 text-center sm:px-8">
+              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-emerald-50 text-emerald-600">
+                <CheckCircle2 className="h-9 w-9" />
               </div>
-
-              <div className="overflow-hidden rounded-3xl border border-blue-100 bg-blue-50/30 p-3 shadow-sm shadow-blue-100/50 sm:p-4">
-                <LiveMap userLocation={userLocation} deliveryLocation={deliveryLocation}/>
-              </div>
-              {order?._id && (
-                <DeliveryChat orderId={order._id} senderId={userData?._id}/>
-              )}
+              <h3 className="text-xl font-black text-slate-900">This order has been delivered</h3>
+              <p className="max-w-md text-sm leading-6 text-slate-500">
+                There&apos;s nothing more to track — your order was delivered successfully.
+              </p>
             </div>
-
-            <div className="rounded-3xl border border-blue-100 bg-white p-5 shadow-lg shadow-blue-100/60 sm:p-6">
-              <div className="flex items-center gap-3 rounded-2xl bg-blue-50/70 p-4">
-                <Truck className="h-10 w-10 shrink-0 rounded-2xl bg-white p-2 text-blue-700 shadow-sm shadow-blue-100/60" />
-                <div className="min-w-0">
-                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">Delivery status</p>
-                  <p className="mt-1 text-sm font-semibold text-slate-800">
-                    {order?.status === "delivered" ? "Delivered" : "On the way"}
-                  </p>
-                </div>
-              </div>
-
-              <div className="mt-5 space-y-3">
-                <div className="rounded-2xl bg-blue-50/60 px-4 py-3 text-sm leading-6 text-slate-600">
-                  <span className="inline-flex items-center gap-2 font-semibold text-slate-800">
-                    <MapPin size={16} className="text-blue-700" />
-                    Delivery address
+          ) : (
+            <div className="grid gap-6 p-5 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start lg:p-8">
+              <div className="space-y-4">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-bold uppercase tracking-[0.18em] text-blue-700">
+                    {order?.status}
                   </span>
-                  <p className="mt-2 wrap-break-word">{order?.address.fullAddress}</p>
+                  <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-bold uppercase tracking-[0.18em] text-slate-600">
+                    Live map
+                  </span>
                 </div>
-                <div className="rounded-2xl border border-blue-100 bg-white px-4 py-3 text-sm font-medium text-slate-700">
-                  Keep this page open for live delivery updates.
+
+                <div className="overflow-hidden rounded-3xl border border-blue-100 bg-blue-50/30 p-3 shadow-sm shadow-blue-100/50 sm:p-4">
+                  <LiveMap userLocation={userLocation} deliveryLocation={deliveryLocation}/>
+                </div>
+                {order?._id && (
+                  <DeliveryChat orderId={order._id} senderId={userData?._id}/>
+                )}
+              </div>
+
+              <div className="rounded-3xl border border-blue-100 bg-white p-5 shadow-lg shadow-blue-100/60 sm:p-6">
+                <div className="flex items-center gap-3 rounded-2xl bg-blue-50/70 p-4">
+                  <Truck className="h-10 w-10 shrink-0 rounded-2xl bg-white p-2 text-blue-700 shadow-sm shadow-blue-100/60" />
+                  <div className="min-w-0">
+                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">Delivery status</p>
+                    <p className="mt-1 text-sm font-semibold text-slate-800">On the way</p>
+                  </div>
+                </div>
+
+                <div className="mt-5 space-y-3">
+                  <div className="rounded-2xl bg-blue-50/60 px-4 py-3 text-sm leading-6 text-slate-600">
+                    <span className="inline-flex items-center gap-2 font-semibold text-slate-800">
+                      <MapPin size={16} className="text-blue-700" />
+                      Delivery address
+                    </span>
+                    <p className="mt-2 wrap-break-word">{order?.address.fullAddress}</p>
+                  </div>
+                  <div className="rounded-2xl border border-blue-100 bg-white px-4 py-3 text-sm font-medium text-slate-700">
+                    Keep this page open for live delivery updates.
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
+          )}
         </motion.div>
       </motion.div>
     </div>

@@ -97,6 +97,16 @@ const ManageOrders = () => {
     }
   }, [])
 
+  const handleStatusChange = (orderId: string, status: string) => {
+    setOrders((prev) =>
+      prev.map((ord) =>
+        ord._id?.toString() === orderId
+          ? { ...ord, status: status as IOrder["status"] }
+          : ord
+      )
+    )
+  }
+
   return (
     <div className="min-h-screen bg-linear-to-b from-slate-50 via-blue-50/70 to-white px-4 py-8 sm:px-6 lg:px-8">
       <div className="mx-auto w-full max-w-7xl">
@@ -185,7 +195,7 @@ const ManageOrders = () => {
             >
               {orders.map((order, index) => (
                 <motion.div key={index} variants={itemVariants}>
-                  <AdminOrderCard order={order} />
+                  <AdminOrderCard order={order} onStatusChange={handleStatusChange} />
                 </motion.div>
               ))}
             </motion.div>

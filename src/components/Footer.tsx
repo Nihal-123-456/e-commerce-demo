@@ -9,6 +9,46 @@ import Link from "next/link"
 const Footer = () => {
   const { data: session, status } = useSession()
   const isAuthenticated = status === "authenticated" && !!session?.user
+  const role = session?.user?.role as "user" | "admin" | "deliveryMan" | undefined
+
+  const primaryCta = !isAuthenticated
+    ? { href: "/login", label: "Login" }
+    : role === "admin"
+    ? { href: "/", label: "Go to Dashboard" }
+    : role === "deliveryMan"
+    ? { href: "/", label: "Go to Dashboard" }
+    : { href: "/", label: "Shop Now" }
+
+  const secondaryCta = !isAuthenticated
+    ? { href: "/register", label: "Register" }
+    : role === "admin"
+    ? { href: "/admin/manage-orders", label: "Manage Orders" }
+    : role === "deliveryMan"
+    ? { href: "/products", label: "View Products" }
+    : { href: "/user/cart", label: "View Cart" }
+
+  const quickLinks = !isAuthenticated
+    ? [
+        { href: "/products", label: "All Products" },
+        { href: "/register", label: "Register" },
+        { href: "/login", label: "Login" },
+      ]
+    : role === "admin"
+    ? [
+        { href: "/admin/add-grocery", label: "Add Grocery" },
+        { href: "/admin/view-grocery", label: "View Grocery" },
+        { href: "/admin/manage-orders", label: "Manage Orders" },
+      ]
+    : role === "deliveryMan"
+    ? [
+        { href: "/", label: "Dashboard" },
+        { href: "/products", label: "All Products" },
+      ]
+    : [
+        { href: "/user/cart", label: "View Cart" },
+        { href: "/user/my-order", label: "My Orders" },
+        { href: "/user/my-order", label: "Track Order" },
+      ]
 
   const containerVariants: Variants = {
     hidden: { opacity: 0, y: 18 },
@@ -52,17 +92,17 @@ const Footer = () => {
             </p>
             <div className="flex flex-wrap gap-3">
               <Link
-                href={isAuthenticated ? "/" : "/login"}
+                href={primaryCta.href}
                 className="inline-flex items-center gap-2 rounded-2xl bg-white px-4 py-3 text-sm font-semibold text-blue-900 shadow-lg shadow-black/15 transition-all hover:-translate-y-0.5 hover:bg-blue-50"
               >
-                {isAuthenticated ? "Shop Now" : "Login"}
+                {primaryCta.label}
                 <ArrowUpRight className="h-4 w-4" />
               </Link>
               <Link
-                href={isAuthenticated ? "/user/cart" : "/register"}
+                href={secondaryCta.href}
                 className="inline-flex items-center gap-2 rounded-2xl border border-white/15 bg-white/5 px-4 py-3 text-sm font-semibold text-white transition-all hover:-translate-y-0.5 hover:bg-white/10"
               >
-                {isAuthenticated ? "View Cart" : "Register"}
+                {secondaryCta.label}
                 <ArrowUpRight className="h-4 w-4" />
               </Link>
             </div>
@@ -77,25 +117,14 @@ const Footer = () => {
                   Home
                 </Link>
               </li>
-              <li>
-                <Link href={isAuthenticated ? "/user/cart" : "/register"} className="inline-flex items-center gap-2 transition-colors hover:text-white">
-                  <span className="h-2 w-2 rounded-full bg-blue-400" />
-                  {isAuthenticated ? "View Cart" : "Register"}
-                </Link>
-              </li>
-              <li>
-                <Link href={isAuthenticated ? "/user/my-order" : "/login"} className="inline-flex items-center gap-2 transition-colors hover:text-white">
-                  <span className="h-2 w-2 rounded-full bg-blue-400" />
-                  {isAuthenticated ? "My Orders" : "Login"}
-                </Link>
-              </li>
-              {isAuthenticated && 
-              <li>
-                <Link href="/user/my-order" className="inline-flex items-center gap-2 transition-colors hover:text-white">
-                  <span className="h-2 w-2 rounded-full bg-blue-400" />
-                  Track Order
-                </Link>
-              </li>}   
+              {quickLinks.map((link) => (
+                <li key={`${link.href}-${link.label}`}>
+                  <Link href={link.href} className="inline-flex items-center gap-2 transition-colors hover:text-white">
+                    <span className="h-2 w-2 rounded-full bg-blue-400" />
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </motion.div>
 

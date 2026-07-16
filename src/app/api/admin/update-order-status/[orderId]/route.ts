@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 import User from "@/models/user.model";
 import DeliveryAssignment from "@/models/deliveryAssignment.model";
 import emitEventHandler from "@/lib/emitEventHandler";
+import { auth } from "@/auth";
 
 interface IDeliveryMenPayload {
     id: string,
@@ -16,6 +17,11 @@ interface IDeliveryMenPayload {
 export async function POST(req:NextRequest, {params}:{params: Promise<{orderId:string}>}) {
     try {
         await connectDb()
+        const session = await auth()
+        if(session?.user?.role !== "admin") {
+            return NextResponse.json({message: "You are not an admin"}, {status: 400})
+        }
+
         const {orderId} = await params
         const body = await req.json()
         const status = typeof body?.status === "string" ? body.status.trim() : ""

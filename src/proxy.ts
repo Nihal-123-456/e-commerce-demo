@@ -3,7 +3,7 @@ import { auth } from "./auth";
 
 export async function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
-  const publicRoutes = ["/login", "/register", "/api/auth", "/favicon.ico", "/_next", "/landing"];
+  const publicRoutes = ["/login", "/register", "/api/auth", "/favicon.ico", "/_next", "/landing", "/products"];
 
   if (publicRoutes.some((path) => pathname === path || pathname.startsWith(path))) {
     return NextResponse.next();

@@ -1,6 +1,6 @@
 'use client'
 
-import { Key, Loader2, LogIn, Mail } from 'lucide-react'
+import { Key, Loader2, LogIn, Mail, ArrowLeft } from 'lucide-react'
 import React, {useEffect, useState} from 'react'
 import { motion } from "motion/react"
 import GoogleImage from "@/assets/google_logo.png"
@@ -49,8 +49,21 @@ const Login = () => {
     }
 
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen px-6 py-10 bg-white relative">
-  
+      <div className='bg-white'>
+      <div className="flex items-center justify-between gap-4 px-10 pt-10">
+        <motion.button
+            type="button"
+            whileHover={{ scale: 1.03, y: -1 }}
+            whileTap={{ scale: 0.97 }}
+            transition={{ type: "spring", stiffness: 420, damping: 22 }}
+            onClick={() => router.push("/")}
+            className="inline-flex items-center gap-2 rounded-full border border-blue-100 bg-white px-4 py-2 font-medium text-blue-700 shadow-sm shadow-blue-100/70 transition-colors hover:bg-blue-50 hover:text-blue-800"
+        >
+            <ArrowLeft size={20} />
+            <span className="hidden sm:inline">Back to home</span>
+        </motion.button>
+      </div>
+      <div className="flex flex-col items-center justify-center min-h-screen px-6 relative">
           <motion.h1 initial={{opacity: 0, y: -20}} animate={{opacity: 1, y: 0}} transition={{duration: 1}} className="text-4xl font-extrabold text-blue-700 mb-2">
               Welcome back!
           </motion.h1>
@@ -97,6 +110,7 @@ const Login = () => {
               Dont have an account? <LogIn className="w-4 h-4"/>
               <span className="text-blue-600">Sign up</span>
           </p>
+      </div>
       </div>
     )
 }

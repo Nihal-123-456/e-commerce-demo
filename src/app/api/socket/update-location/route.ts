@@ -1,8 +1,12 @@
 import connectDb from "@/lib/db";
 import User from "@/models/user.model";
 import { NextRequest, NextResponse } from "next/server";
+import { isInternalRequestAuthorized } from "@/lib/verifyInternalRequest";
 
 export async function POST(req:NextRequest) {
+    if (!isInternalRequestAuthorized(req)) {
+        return NextResponse.json({message: "Unauthorized"}, {status: 401})
+    }
     try {
         await connectDb()
         const {userId, location} = await req.json()
